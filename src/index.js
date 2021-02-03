@@ -122,6 +122,7 @@ export default class ImageTool {
       buttonContent: config.buttonContent || '',
       uploader: config.uploader || undefined,
       actions: config.actions || [],
+      getUrl: config.getUrl || null,
     };
 
     /**
@@ -328,8 +329,20 @@ export default class ImageTool {
   set image(file) {
     this._data.file = file || {};
 
-    if (file && file.url) {
-      this.ui.fillImage(file.url);
+    if (file) {
+      if (typeof this.config.getUrl === "function") {
+        this.config.getUrl(file)
+          .then((url) => {
+            this.ui.fillImage(url);
+          })
+          .catch((e) => {
+            throw new Error(e);
+          });
+      } else if (typeof file.url === "string") {
+        this.ui.fillImage(file.url);
+      } else {
+        throw new Error("Cannot set image url.");
+      }
     }
   }
 
